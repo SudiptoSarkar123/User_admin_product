@@ -15,9 +15,10 @@ app.use(morgan('dev'))
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 
 const port = process.env.PORT || 3001
-
+console.log(port)
 app.get('/',(req,res)=>{
-    res.send("Server is running on ",port)
+    
+    res.send(`<h1>Server is running at port ${port}</h1>`)
 })
 
 app.use(express.json())
