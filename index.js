@@ -14,6 +14,7 @@ const app = express()
 app.use(morgan('dev'))
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 
+const port = process.env.PORT || 3001
 
 app.get('/',(req,res)=>{
     res.send("Server is running on ",port)
@@ -28,7 +29,6 @@ app.use(errorMiddleware)
 
 
 
-const port = process.env.PORT || 3001
 app.listen(port, ()=>{
     console.log("Server is running at port ",port)
 })
