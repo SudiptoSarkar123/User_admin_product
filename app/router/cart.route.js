@@ -13,7 +13,7 @@ import {
 
 // import { redisMiddleware } from "../middleware/redisMiddleware.js";
 
-CartRouter.get("/add", authCheck, addToCart);
+CartRouter.post("/add", authCheck, addToCart);
 
 CartRouter.get("/", authCheck, getCartDetails);
 

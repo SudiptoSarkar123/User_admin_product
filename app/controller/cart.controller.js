@@ -11,6 +11,7 @@ import redis from "../config/redis.config.js";
 
 
 export const addToCart = asynchandler(async (req, res) => {
+  console.log('req.query',req.query)
   const v = new Validator(req.query, {
     productId: "required",
     quentity: "required|numeric",
@@ -21,6 +22,7 @@ export const addToCart = asynchandler(async (req, res) => {
   }
   const { productId, quentity } = req.query;
   const product = await Product.findById(productId);
+  console.log('product',product)
   if (!product) throw createError(404, "Product not found");
   if (product.quentity < quentity) {
     throw createError(400, "Product out of stock");
@@ -39,7 +41,7 @@ export const addToCart = asynchandler(async (req, res) => {
     });
   }
 
-  cart.products.push({ product });
+  cart.products.push({ productId, quentity });
   await cart.save();
 
   res.status(200).json({

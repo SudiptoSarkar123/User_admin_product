@@ -92,6 +92,7 @@ export const addUser = asynchandler(async (req, res) => {
 //This route is for update user
 export const updateUser = asynchandler(async (req, res) => {
   const userId = req.params.id;
+  console.log("req.body", req.body);  
 
   const v = new Validator(req.body, {
     name: "string",

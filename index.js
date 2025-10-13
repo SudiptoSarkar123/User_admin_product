@@ -11,8 +11,12 @@ import specs from './app/config/swagger.config.js'
 
 
 const app = express()
+app.use(cors());
+
+app.use(express.json())
+app.use(express.urlencoded({extended:false}))
+
 app.use(morgan('dev'))
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 
 const port = process.env.PORT || 3001
 console.log(port)
@@ -21,8 +25,6 @@ app.get('/',(req,res)=>{
     res.send(`<h1>Server is running at port ${port}</h1>`)
 })
 
-app.use(express.json())
-app.use(express.urlencoded({extended:false}))
 
 
 app.use('/api',router)

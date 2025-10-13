@@ -26,7 +26,7 @@ export const createOrder = asynchandler(async (req, res) => {
     if (!product) throw createError(404, "Product not found");
 
     const existingIndex = cart.products.findIndex(
-      (p) => p.productId._id.toString() === productId
+      (p) => p.productId.toString() === productId
     );
 
     if (existingIndex >= 0) {

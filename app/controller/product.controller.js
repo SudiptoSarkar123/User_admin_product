@@ -8,6 +8,7 @@ import mongoose from "mongoose";
 import Order from "../models/order.model.js";
 
 export const addProduct = asynchandler(async (req, res) => {
+  console.log('req.body',req.body)
   const v = new Validator(req.body, {
     name: "required|string",
     price: "required|numeric",
