@@ -26,7 +26,12 @@ export const login = asynchandler(async (req, res) => {
   const payload = { id: user._id, role: user.role };
   const token = generateToken(payload);
 
-  res.status(200).json({ message: "login successful", token });
+  res.status(200).json({ message: "login successful",
+    data:{
+      name:user.name,
+      email:user.email,
+    },
+    token });
 });
 
 //This route is for user registration
