@@ -1,5 +1,3 @@
-import express from "express";
-import Order from "../models/order.model.js";
 import Cart from "../models/cart.model.js";
 import createError from "../helper/createError.js";
 import { Validator } from "node-input-validator";

@@ -15,7 +15,7 @@ ProductRouter.post("/add", authCheck, upload.single("image"), addProduct);
 
 ProductRouter.get("/by-user", authCheck, allProductsByUserAndOthers);
 
-ProductRouter.get("/", allProducts);
+ProductRouter.get("/", authCheck, allProducts);
 
 ProductRouter.get("/single/:id", authCheck, singleProductDetails);
 

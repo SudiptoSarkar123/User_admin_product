@@ -26,12 +26,14 @@ export const login = asynchandler(async (req, res) => {
   const payload = { id: user._id, role: user.role };
   const token = generateToken(payload);
 
-  res.status(200).json({ message: "login successful",
-    data:{
-      name:user.name,
-      email:user.email,
+  res.status(200).json({
+    message: "login successful",
+    data: {
+      name: user.name,
+      email: user.email,
     },
-    token });
+    token,
+  });
 });
 
 //This route is for user registration
@@ -88,7 +90,7 @@ export const addUser = asynchandler(async (req, res) => {
     role: role ? role : "user",
   });
   await newUser.save();
-  return res.status(200).json({
+  return res.status(201).json({
     message: "New user created successfully",
     user: newUser,
   });
@@ -97,7 +99,7 @@ export const addUser = asynchandler(async (req, res) => {
 //This route is for update user
 export const updateUser = asynchandler(async (req, res) => {
   const userId = req.params.id;
-  console.log("req.body", req.body);  
+  console.log("req.body", req.body);
 
   const v = new Validator(req.body, {
     name: "string",

@@ -25,7 +25,7 @@ const authCheck = (req, res, next) => {
     }
 
     // Fallback for any other error
-    return next(createError(500, "Authentication failed"));
+    return next(createError(401, "Authentication failed"));
   }
 };
 

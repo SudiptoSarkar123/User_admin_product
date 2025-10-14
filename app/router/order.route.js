@@ -5,6 +5,6 @@ const OrderRouter = express.Router();
  
 
 // This is order route 
-OrderRouter.get("/orderFromCart", authCheck, createOrder);
+OrderRouter.post("/orderFromCart", authCheck, createOrder);
 
 export default OrderRouter;
