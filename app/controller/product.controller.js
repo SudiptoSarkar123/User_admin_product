@@ -3,9 +3,8 @@ import { Validator } from "node-input-validator";
 import createError from "../helper/createError.js";
 import Product from "../models/product.model.js";
 import uploadToCloudinary from "../helper/uploadToCloudinary.js";
-import Cart from "../models/cart.model.js";
 import mongoose from "mongoose";
-import Order from "../models/order.model.js";
+import cloudinary from "../config/cloudinary.config.js";
 
 export const addProduct = asynchandler(async (req, res) => {
   console.log('req.body',req.body)
@@ -78,5 +77,64 @@ export const singleProductDetails = asynchandler(async (req, res) => {
   if (!product) throw createError(404, "Product not found");
   res.status(200).json({
     data: product,
+  });
+});
+
+export const  updateProduct = asynchandler(async(req,res)=>{
+
+  const  v = new Validator(req.body, {
+    name: "required|string",
+    price: "required|numeric",
+    quentity: "required|numeric",
+  });
+
+
+
+  const matched = v.check();
+  if(!matched){
+    throw createError(400, "validation error", v.errors);
+  }
+  
+
+  const { name, price, quentity } = req.body;
+  const productId = req.params.id;
+  const product = await Product.findById(productId);
+  if (!product) throw createError(404, "Product not found");
+
+  let updateProduct = {}
+
+  if(name) updateProduct.name = name;
+  if(price) updateProduct.price = price;
+  if(quentity) updateProduct.quentity = quentity;
+
+
+  if(req.file){
+    const result = await uploadToCloudinary(req.file.buffer);
+    updateProduct.imageUrl = result.secure_url;
+    updateProduct.productImagePublicId = result.public_id;
+
+    if(product.imageUrl){
+      await cloudinary.uploader.destroy(product.productImagePublicId);
+    }
+  }
+
+
+  await Product.findByIdAndUpdate(productId, updateProduct);
+  res.status(200).json({
+    message: "Product updated successfully",
+    product
+  });
+ 
+
+})
+
+
+export const deleteProduct = asynchandler(async (req, res) => {
+  const productId = req.params.id;
+  const product = await Product.findByIdAndDelete(productId);
+  if (!product) throw createError(404, "Product not found");
+  res.status(200).json({
+    message: "Product deleted successfully",
+    product: product._id,
   });
 });

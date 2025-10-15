@@ -3,7 +3,6 @@ import Order from "../models/order.model.js";
 import Product from "../models/product.model.js";
 import asynchandler from "express-async-handler";
 import createError from "../helper/createError.js";
-import { Validator } from "node-input-validator";
 
 export const createOrder = asynchandler(async (req, res) => {
   const userId = req.user.id;

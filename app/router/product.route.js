@@ -4,7 +4,9 @@ import {
   addProduct,
   allProducts,
   allProductsByUserAndOthers,
+  deleteProduct,
   singleProductDetails,
+  updateProduct,
 } from "../controller/product.controller.js";
 import authCheck from "../middleware/authMiddleware.js";
 const ProductRouter = express.Router();
@@ -17,6 +19,11 @@ ProductRouter.get("/by-user", authCheck, allProductsByUserAndOthers);
 
 ProductRouter.get("/", authCheck, allProducts);
 
+
 ProductRouter.get("/single/:id", authCheck, singleProductDetails);
+
+ProductRouter.put("/update/:id", authCheck, upload.single("image"), updateProduct);
+
+ProductRouter.delete("/delete/:id", authCheck, deleteProduct);
 
 export default ProductRouter;
