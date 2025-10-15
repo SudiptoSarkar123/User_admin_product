@@ -101,6 +101,10 @@ export const  updateProduct = asynchandler(async(req,res)=>{
   const product = await Product.findById(productId);
   if (!product) throw createError(404, "Product not found");
 
+  if(req.user.role !== "admin" && product.createdBy.toString() !== req.user._id){
+    throw createError(403, "You are not authorized to update this product");
+  }
+
   let updateProduct = {}
 
   if(name) updateProduct.name = name;
