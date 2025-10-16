@@ -6,10 +6,8 @@ import asynchandler from "express-async-handler";
 import Product from "../models/product.model.js";
 import redis from "../config/redis.config.js";
 
-
-
 export const addToCart = asynchandler(async (req, res) => {
-  console.log('req.query',req.query)
+  console.log("req.query", req.query);
   const v = new Validator(req.query, {
     productId: "required",
     quentity: "required|numeric",
@@ -20,7 +18,7 @@ export const addToCart = asynchandler(async (req, res) => {
   }
   const { productId, quentity } = req.query;
   const product = await Product.findById(productId);
-  console.log('product',product)
+  console.log("product", product);
   if (!product) throw createError(404, "Product not found");
   if (product.quentity < quentity) {
     throw createError(400, "Product out of stock");
@@ -97,7 +95,7 @@ export const getCartDetails = asynchandler(async (req, res) => {
   console.log("All Products cached in Redis");
 });
 
-export const addDeleteOrSubtractFromCart = asynchandler(async (req, res) => {
+export const updateCart = asynchandler(async (req, res) => {
   const { action } = req.body;
   const productId = req.body.productId;
   // this is the porblem area
@@ -115,7 +113,7 @@ export const addDeleteOrSubtractFromCart = asynchandler(async (req, res) => {
   );
 
   if (action === "add") {
-    if (product.quentity <= 0) throw createError(400, "Product Outof shock!");
+    if (product.quentity <= 0) throw createError(400, "Product Out of shock!");
 
     if (existingIndex >= 0) {
       cart.products[existingIndex].quentity += 1;
@@ -130,7 +128,6 @@ export const addDeleteOrSubtractFromCart = asynchandler(async (req, res) => {
       cart,
     });
   }
-
   if (action === "sub") {
     if (existingIndex >= 0) {
       const currentQty = cart.products[existingIndex].quentity;
@@ -170,8 +167,10 @@ export const addDeleteOrSubtractFromCart = asynchandler(async (req, res) => {
   throw createError(400, "Invalid action. Use 'add , sub' or 'remove'! ");
 });
 
-export const allProductsClearFromCart = asynchandler(async (req, res) => {
-  const cart = await Cart.findOne({ user: req.user.id });
+export const clearCart = asynchandler(async (req, res) => {
+  // console.log(req.user.id)
+  const cart = await Cart.findOne({user: req.user.id });
+  // console.log(cart)
   if (!cart) {
     throw createError(404, "Cart not found");
   }
