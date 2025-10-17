@@ -6,8 +6,10 @@ import createError from "../helper/createError.js";
 
 export const createOrder = asynchandler(async (req, res) => {
   const userId = req.user.id;
-  const { productId, quentity } = req.query;
-  const productQuentity = quentity === 0 ? 1 : quentity;
+  const { productId, quentity } = req.body;
+  const productQuentityRaw =
+    typeof quentity === "string" ? Number(quentity) : quentity;
+  const productQuentity = productQuentityRaw === 0 ? 1 : productQuentityRaw;
 
   let cart = await Cart.findOne({ user: userId }).populate(
     "products.productId"
@@ -19,13 +21,16 @@ export const createOrder = asynchandler(async (req, res) => {
 
   let orderProducts = [];
 
-  if (productId && productQuentity) {
+  if (productId && Number(productQuentity) > 0) {
     const product = await Product.findById(productId);
     if (!product) throw createError(404, "Product not found");
 
-    const existingIndex = cart.products.findIndex(
-      (p) => p.productId.toString() === productId
-    );
+    const existingIndex = cart.products.findIndex((p) => {
+      const idStr = (
+        p.productId && p.productId._id ? p.productId._id : p.productId
+      ).toString();
+      return idStr === productId;
+    });
 
     if (existingIndex >= 0) {
       if (
@@ -47,9 +52,12 @@ export const createOrder = asynchandler(async (req, res) => {
       price: product.price,
     });
 
-    cart.products = cart.products.filter(
-      (p) => p.productId._id.toString() !== productId
-    );
+    cart.products = cart.products.filter((p) => {
+      const idStr = (
+        p.productId && p.productId._id ? p.productId._id : p.productId
+      ).toString();
+      return idStr !== productId;
+    });
 
     await cart.save();
 
@@ -60,16 +68,18 @@ export const createOrder = asynchandler(async (req, res) => {
       throw createError(400, "Cart is empty");
     }
     for (const p of cart.products) {
-      const product = await Product.findById(p.productId._id);
+      const productIdForLookup =
+        p.productId && p.productId._id ? p.productId._id : p.productId;
+      const product = await Product.findById(productIdForLookup);
       if (!product) {
         throw createError(404, "Product not found");
       }
       if (product.quentity < p.quentity) {
-        throw createError(400`Not enough stock for ${product.name}`);
+        throw createError(400, `Not enough stock for ${product.name}`);
       }
 
       orderProducts.push({
-        productId: p.productId._id,
+        productId: product._id,
         quentity: p.quentity,
         price: product.price,
       });
