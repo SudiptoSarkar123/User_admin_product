@@ -6,30 +6,33 @@ import createError from "../helper/createError.js";
 
 export const createOrder = asynchandler(async (req, res) => {
   const userId = req.user.id;
+  console.log(req.body); // req.body
   const { productId, quentity } = req.body || {};
   const productQuentityRaw =
     typeof quentity === "string" ? Number(quentity) : quentity;
   const productQuentity = productQuentityRaw === 0 ? 1 : productQuentityRaw;
 
-  let cart = await Cart.findOne({ user: userId }).populate(
-    "products.productId"
-  );
+  let cart = await Cart.findOne({ user: userId });
 
+  console.log("Cart", cart);
   if (!cart) {
     cart = await Cart.create({ user: userId, products: [] });
   }
 
   let orderProducts = [];
 
-  if (productId && Number(productQuentity) > 0) {
+  if (productId && productQuentity) {
     const product = await Product.findById(productId);
+    console.log("The Product :", product); //product
+
     if (!product) throw createError(404, "Product not found");
+    // find index of product
 
     const existingIndex = cart.products.findIndex((p) => {
-      const idStr = (
-        p.productId && p.productId._id ? p.productId._id : p.productId
-      ).toString();
-      return idStr === productId;
+      const idCandidate =
+        p?.productId && p.productId._id ? p.productId._id : p?.productId;
+      if (!idCandidate) return false;
+      return idCandidate.toString() === productId;
     });
 
     if (existingIndex >= 0) {
@@ -52,13 +55,6 @@ export const createOrder = asynchandler(async (req, res) => {
       price: product.price,
     });
 
-    cart.products = cart.products.filter((p) => {
-      const idStr = (
-        p.productId && p.productId._id ? p.productId._id : p.productId
-      ).toString();
-      return idStr !== productId;
-    });
-
     await cart.save();
 
     product.quentity -= Number(productQuentity);
@@ -68,9 +64,9 @@ export const createOrder = asynchandler(async (req, res) => {
       throw createError(400, "Cart is empty");
     }
     for (const p of cart.products) {
-      const productIdForLookup =
-        p.productId && p.productId._id ? p.productId._id : p.productId;
-      const product = await Product.findById(productIdForLookup);
+      const pid =
+        p?.productId && p.productId._id ? p.productId._id : p?.productId;
+      const product = await Product.findById(pid);
       if (!product) {
         throw createError(404, "Product not found");
       }
@@ -87,8 +83,7 @@ export const createOrder = asynchandler(async (req, res) => {
       product.quentity -= p.quentity;
       await product.save();
     }
-
-    cart.products = [];
+    // Do not clear the cart after ordering; preserve user's cart entries
     await cart.save();
   }
 

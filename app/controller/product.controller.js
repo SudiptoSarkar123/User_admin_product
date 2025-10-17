@@ -7,7 +7,7 @@ import mongoose from "mongoose";
 import cloudinary from "../config/cloudinary.config.js";
 
 export const addProduct = asynchandler(async (req, res) => {
-  console.log('req.body',req.body)
+  console.log("req.body", req.body);
   const v = new Validator(req.body, {
     name: "required|string",
     price: "required|numeric",
@@ -80,21 +80,17 @@ export const singleProductDetails = asynchandler(async (req, res) => {
   });
 });
 
-export const  updateProduct = asynchandler(async(req,res)=>{
-
-  const  v = new Validator(req.body, {
+export const updateProduct = asynchandler(async (req, res) => {
+  const v = new Validator(req.body, {
     name: "required|string",
     price: "required|numeric",
     quentity: "required|numeric",
   });
 
-
-
   const matched = v.check();
-  if(!matched){
+  if (!matched) {
     throw createError(400, "validation error", v.errors);
   }
-  
 
   const { name, price, quentity } = req.body;
   const productId = req.params.id;
@@ -104,41 +100,64 @@ export const  updateProduct = asynchandler(async(req,res)=>{
   // console.log(product.createdBy);
   // console.log(req.user.id);
   console.log(product.createdBy !== req.user.id);
-  if(product.createdBy.toString() !== req.user.id){
+  if (product.createdBy.toString() !== req.user.id) {
     throw createError(403, "You are not authorized to update this product");
   }
 
-  let updateProduct = {}
+  let updateProduct = {};
 
-  if(name) updateProduct.name = name;
-  if(price) updateProduct.price = price;
-  if(quentity) updateProduct.quentity = quentity;
+  if (name) updateProduct.name = name;
+  if (price) updateProduct.price = price;
+  if (quentity) updateProduct.quentity = quentity;
 
-
-  if(req.file){
+  if (req.file) {
     const result = await uploadToCloudinary(req.file.buffer);
     updateProduct.imageUrl = result.secure_url;
     updateProduct.productImagePublicId = result.public_id;
 
-    if(product.imageUrl){
+    if (product.imageUrl) {
       await cloudinary.uploader.destroy(product.productImagePublicId);
     }
   }
 
-
   await Product.findByIdAndUpdate(productId, updateProduct);
   res.status(200).json({
     message: "Product updated successfully",
-    product
+    product,
   });
- 
-
-})
-
+});
 
 export const deleteProduct = asynchandler(async (req, res) => {
   const productId = req.params.id;
-  const product = await Product.findByIdAndDelete(productId);
+
+  if (product.createdBy.toString() !== req.user.id) {
+    throw createError(403, "You are not authorized to delete this product");
+  }
+
+  const product = await Product.findById(productId);
+  if (!product) throw createError(404, "Product not found");
+
+  const isAddedInCart = await Cart.findOne({
+    products: {
+      $elemMatch: {
+        productId: productId,
+      },
+    },
+  });
+
+  if (isAddedInCart) throw createError(400, "Product is added in cart");
+
+  const isOrdered = await Order.findOne({
+    products: {
+      $elemMatch: {
+        productId: productId,
+      },
+    },
+  });
+
+  if (isOrdered)
+    throw createError(400, "Product is ordered already so cannot be deleted");
+
   if (!product) throw createError(404, "Product not found");
   res.status(200).json({
     message: "Product deleted successfully",
