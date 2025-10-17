@@ -6,7 +6,7 @@ import createError from "../helper/createError.js";
 
 export const createOrder = asynchandler(async (req, res) => {
   const userId = req.user.id;
-  const { productId, quentity } = req.body;
+  const { productId, quentity } = req.body || {};
   const productQuentityRaw =
     typeof quentity === "string" ? Number(quentity) : quentity;
   const productQuentity = productQuentityRaw === 0 ? 1 : productQuentityRaw;
