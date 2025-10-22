@@ -5,6 +5,8 @@ import Product from "../models/product.model.js";
 import uploadToCloudinary from "../helper/uploadToCloudinary.js";
 import mongoose from "mongoose";
 import cloudinary from "../config/cloudinary.config.js";
+import Cart from "../models/cart.model.js";
+import Order from "../models/order.model.js";
 
 export const addProduct = asynchandler(async (req, res) => {
   console.log("req.body", req.body);
@@ -129,12 +131,12 @@ export const updateProduct = asynchandler(async (req, res) => {
 
 export const deleteProduct = asynchandler(async (req, res) => {
   const productId = req.params.id;
+  const product = await Product.findById(productId);
 
   if (product.createdBy.toString() !== req.user.id) {
     throw createError(403, "You are not authorized to delete this product");
   }
 
-  const product = await Product.findById(productId);
   if (!product) throw createError(404, "Product not found");
 
   const isAddedInCart = await Cart.findOne({
@@ -158,7 +160,8 @@ export const deleteProduct = asynchandler(async (req, res) => {
   if (isOrdered)
     throw createError(400, "Product is ordered already so cannot be deleted");
 
-  if (!product) throw createError(404, "Product not found");
+  await Product.findByIdAndDelete(productId);
+
   res.status(200).json({
     message: "Product deleted successfully",
     product: product._id,

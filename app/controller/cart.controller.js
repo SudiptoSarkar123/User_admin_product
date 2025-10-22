@@ -16,34 +16,49 @@ export const addToCart = asynchandler(async (req, res) => {
   if (!matched) {
     throw createError(400, "validation error", v.errors);
   }
-  const { productId, quentity } = req.query;
-  const product = await Product.findById(productId);
-  console.log("product", product);
-  if (!product) throw createError(404, "Product not found");
-  if (product.quentity < quentity) {
-    throw createError(400, "Product out of stock");
-  }
 
-  const cart = await Cart.findOne({ user: req.user.id });
+
+
+  const { productId, quentity } = req.query;
+  const userId = req.user.id;
+
+  const product = await Product.findOne({ _id: productId });
+  if (!product) throw createError(404, "Product not found.");
+
+  if (product.quentity < quentity)
+    throw createError(400, "Product Out of Stock");
+
+  const cart = await Cart.findOne({ user: userId });
   if (!cart) {
     const newCart = new Cart({
-      user: req.user.id,
-      products: [{ productId, quentity }],
+      user: userId,
+      products: [{ productId, quentity: Number(quentity) }],
     });
-    await newCart.save();
+
+    await cart.save();
     return res.status(200).json({
       message: "Product added to cart successfully",
       cart: newCart,
     });
   }
 
-  cart.products.push({ productId, quentity });
+  // Check if product already exists in cart
+  const productIndex = cart.products.findIndex(
+    (p) => p.productId.toString() === productId
+  );
+
+  if (productIndex > -1) {
+    cart.products[productIndex].quentity += Number(quentity);
+  } else {
+    cart.products.push({ productId, quentity });
+  }
+
   await cart.save();
 
-  res.status(200).json({
-    message: "Product added to cart successfully",
-    cart,
-  });
+  return res.status(200).json({
+    message:"Product added to cart successfully",
+    cart 
+  })
 });
 
 export const getCartDetails = asynchandler(async (req, res) => {
@@ -169,7 +184,7 @@ export const updateCart = asynchandler(async (req, res) => {
 
 export const clearCart = asynchandler(async (req, res) => {
   // console.log(req.user.id)
-  const cart = await Cart.findOne({user: req.user.id });
+  const cart = await Cart.findOne({ user: req.user.id });
   // console.log(cart)
   if (!cart) {
     throw createError(404, "Cart not found");
