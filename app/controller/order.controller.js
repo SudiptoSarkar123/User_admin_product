@@ -114,10 +114,12 @@ export const getMyOrders = asynchandler(async (req, res) => {
   // Get paginated orders
   const orders = await Order.find({ user: userId })
     .populate("products.productId", "name price imageUrl")
-    .sort({ createdAt: 1 })
+    .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit)
     .lean(); 
+
+    console.log(orders)
 
     // console.log(orders[0].products)
   const totalOrders = await Order.countDocuments({ user: userId });
