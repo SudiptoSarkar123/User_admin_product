@@ -114,6 +114,7 @@ export const getMyOrders = asynchandler(async (req, res) => {
   // Get paginated orders
   const orders = await Order.find({ user: userId })
     .populate("products.productId", "name price imageUrl")
+    .sort({ createdAt: 1 })
     .skip(skip)
     .limit(limit)
     .lean(); 
@@ -162,6 +163,6 @@ export const getMyOrders = asynchandler(async (req, res) => {
 
 
 
-export const getOrderDetails = asynchandler(async (req, res) => {
-  const orderId = req.params.id;
-})
+// export const getOrderDetails = asynchandler(async (req, res) => {
+//   const orderId = req.params.id;
+// })
