@@ -35,7 +35,7 @@ export const addToCart = asynchandler(async (req, res) => {
       products: [{ productId, quentity: Number(quentity) }],
     });
 
-    await cart.save();
+    await newCart.save();
     return res.status(200).json({
       message: "Product added to cart successfully",
       cart: newCart,
